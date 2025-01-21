@@ -4,7 +4,7 @@ spring:
 
 resilience:
   monitor:
-    interval: 10s
+    interval: 20s
   patterns:
     enabled: true
 
