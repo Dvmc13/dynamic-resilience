@@ -2,5 +2,5 @@ spring:
   profiles: prod
 
 resilience:
-  monitoring:
+  monitor:
     interval: 1m  # Monitoreo menos frecuente en producción
