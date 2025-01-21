@@ -4,7 +4,7 @@ spring:
 
 resilience:
   monitor:
-    interval: 15s  # Intervalo de monitoreo de métricas
+    interval: 10s  # Intervalo de monitoreo de métricas
   patterns:
     enabled: true  # Indica si los patrones (Circuit Breaker, Retry) están habilitados
 
