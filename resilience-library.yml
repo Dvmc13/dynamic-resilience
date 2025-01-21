@@ -10,6 +10,6 @@ resilience:
 
 services:
   - name: catalog-service
-    url: http://catalog-service:8081
+    url: http://192.168.50.3:8081
   - name: order-service
-    url: http://order-service:8082
+    url: http://192.168.50.3:8082
