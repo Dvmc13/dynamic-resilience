@@ -1,0 +1,6 @@
+spring:
+  profiles: prod
+
+resilience:
+  monitoring:
+    interval: 1m  # Monitoreo menos frecuente en producción
