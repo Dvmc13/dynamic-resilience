@@ -4,15 +4,15 @@ spring:
 
 resilience:
   monitor:
-    interval: 10s  # Intervalo de monitoreo de métricas
+    interval: 10s
   patterns:
-    enabled: true  # Indica si los patrones (Circuit Breaker, Retry) están habilitados
+    enabled: true
 
-services:
-  - name: catalog-service
-    host: localhost
-    port: 8081
+  services:
+    - name: catalog-service
+      host: localhost
+      port: 8081
 
-  - name: order-service
-    host: localhost
-    port: 8082
+    - name: order-service
+      host: localhost
+      port: 8082
