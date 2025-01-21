@@ -3,7 +3,7 @@ spring:
     name: resilience-library
 
 resilience:
-  monitoring:
+  monitor:
     interval: 15s  # Intervalo de monitoreo de métricas
   patterns:
     enabled: true  # Indica si los patrones (Circuit Breaker, Retry) están habilitados
