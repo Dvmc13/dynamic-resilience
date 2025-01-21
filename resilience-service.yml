@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: resilience-service
+
+resilience:
+  monitoring:
+    interval: 30s  # Intervalo de monitoreo de métricas
+  patterns:
+    enabled: true  # Indica si los patrones (Circuit Breaker, Retry) están habilitados
+
+services:
+  - name: catalog-service
+    url: http://catalog-service:8081
+  - name: order-service
+    url: http://order-service:8082
