@@ -1,18 +1,35 @@
-spring:
-  application:
-    name: resilience-library
-
 resilience:
   monitor:
-    interval: 20s
-  patterns:
-    enabled: true
+    interval: 30s  # Intervalo de monitoreo de métricas
 
   services:
     - name: catalog-service
       host: localhost
       port: 8081
+      metrics:
+        latencyEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_sum
+        errorEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_count
 
     - name: order-service
       host: localhost
       port: 8082
+      metrics:
+        latencyEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_sum
+        errorEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_count
+
+  rules:
+    - service: catalog-service
+      condition: "latency > 500"
+      action: "circuitBreaker.open()"
+
+    - service: catalog-service
+      condition: "latency < 200"
+      action: "retry.maxAttempts = 3"
+
+    - service: order-service
+      condition: "errorRate > 0.20"
+      action: "circuitBreaker.open()"
+
+    - service: order-service
+      condition: "errorRate < 0.10"
+      action: "circuitBreaker.close()"
