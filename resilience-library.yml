@@ -7,15 +7,15 @@ resilience:
       host: localhost
       port: 8081
       metrics:
-        latencyEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_sum
-        errorEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_count
+        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
+        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
 
     - name: order-service
       host: localhost
       port: 8082
       metrics:
-        latencyEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_sum
-        errorEndpoint: /actuator/prometheus?includedNames=http_server_requests_seconds_count
+        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
+        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
 
   rules:
     - service: catalog-service
