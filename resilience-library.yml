@@ -1,18 +1,18 @@
 resilience:
   monitor:
-    interval: 30s  # Intervalo de monitoreo de métricas
+    interval: 30s
 
   services:
     - name: catalog-service
-      host: localhost
-      port: 8081
+      host: ${CATALOG_SERVICE_HOST:localhost}
+      port: ${CATALOG_SERVICE_PORT:8081}
       metrics:
         latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
         errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
 
     - name: order-service
-      host: localhost
-      port: 8082
+      host: ${ORDER_SERVICE_HOST:localhost}
+      port: ${ORDER_SERVICE_PORT:8082}
       metrics:
         latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
         errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
