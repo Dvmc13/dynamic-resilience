@@ -3,5 +3,5 @@ rules:
     action: "circuitBreaker.open()"
   - condition: "latency < 200"
     action: "retry.maxAttempts = 3"
-  - condition: "errorRate > 20%"
+  - condition: "errorRate > 0.2"
     action: "circuitBreaker.open()"
