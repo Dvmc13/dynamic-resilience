@@ -3,5 +3,5 @@ rules:
     action: "retry.maxAttempts = 2"
   - condition: "errorRate > 0.33"
     action: "circuitBreaker.open()"
-  - condition: "errorRate < 0.2"
+  - condition: "errorRate < 0.33"
     action: "circuitBreaker.close()"
