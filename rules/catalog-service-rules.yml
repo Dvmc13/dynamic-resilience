@@ -2,6 +2,6 @@ rules:
   - condition: "latency > 200"
     action: "circuitBreaker.open()"
   - condition: "latency < 199"
-    action: "circuitBreaker.closed()"
+    action: "circuitBreaker.close()"
   - condition: "errorRate > 0.2"
     action: "circuitBreaker.open()"
