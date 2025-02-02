@@ -1,7 +1,7 @@
 rules:
-  - condition: "latency > 10"
+  - condition: "latency > 200"
     action: "circuitBreaker.open()"
-  - condition: "latency < 9"
+  - condition: "latency < 199"
     action: "retry.maxAttempts = 3"
   - condition: "errorRate > 0.2"
     action: "circuitBreaker.open()"
