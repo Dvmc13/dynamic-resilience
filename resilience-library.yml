@@ -1,6 +1,6 @@
 resilience:
   monitor:
-    interval: 3000
+    interval: 30000
 
   services:
     - name: catalog-service
