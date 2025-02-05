@@ -10,10 +10,9 @@ spring:
     inetutils:
       preferredNetworks: 127.0.0.1
       ignoredInterfaces: eth0
-
-spring:
   application:
-    name: global-config  # O define el nombre de la aplicación en este archivo si lo deseas
+    name: global-config  # Puedes definir aquí el nombre global o dejarlo para cada aplicación si lo prefieres
+
 server:
   port: 8080
 
