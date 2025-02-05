@@ -1,3 +1,58 @@
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    bus:
+      enabled: true
+  application:
+    name: global-config
+  cloud:
+    inetutils:
+      preferredNetworks: 127.0.0.1
+      ignoredInterfaces: eth0
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    refresh:
+      enabled: true
+    prometheus:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      "*":
+        metrics:
+          enabled: true
+  retry:
+    instances:
+      "*":
+        metrics:
+          enabled: true
+  bulkhead:
+    instances:
+      "*":
+        metrics:
+          enabled: true
+  ratelimiter:
+    instances:
+      "*":
+        metrics:
+          enabled: true
+
 logging:
   level:
     root: INFO
+    com.example.resilience_library: DEBUG
