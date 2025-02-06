@@ -4,12 +4,14 @@ spring:
     port: 5672
     username: guest
     password: guest
+
   cloud:
     bus:
       enabled: true
     inetutils:
       preferredNetworks: 127.0.0.1
       ignoredInterfaces: eth0
+
   application:
     name: global-config  # Nombre global (opcional)
 
@@ -43,14 +45,20 @@ resilience4j:
         waitDurationInOpenState: 5s
         metrics:
           enabled: true
+
   retry:
     instances:
       "*":
         maxAttempts: 3
         waitDuration: 500ms
-        exponentialBackoffMultiplier: 2
+        # Si deseas usar backoff exponencial, añade la propiedad para activarlo:
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2.0
+        # Ejemplo opcional: tiempo máximo de espera en backoff
+        # maxWaitDuration: 10s
         metrics:
           enabled: true
+
   ratelimiter:
     instances:
       "*":
