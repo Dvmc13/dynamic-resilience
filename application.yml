@@ -9,8 +9,8 @@ spring:
     bus:
       enabled: true
     inetutils:
-      preferredNetworks: 127.0.0.1
-      ignoredInterfaces: eth0
+      preferred-networks: 127.0.0.1
+      ignored-interfaces: eth0
 
   application:
     name: global-config  # Nombre global (opcional)
@@ -22,7 +22,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"  # Se exponen todos los endpoints, incluido "circuitbreakers"
+        include: "*"  # Se exponen todos los endpoints (incluido "circuitbreakers")
   endpoint:
     health:
       show-details: always
@@ -31,40 +31,41 @@ management:
     prometheus:
       enabled: true
 
+# -------------------------------------------------------------------
+# RESILIENCE4J (con KEBAB-CASE para evitar errores de binding)
+# -------------------------------------------------------------------
 resilience4j:
+
   circuitbreaker:
     instances:
       "*":
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: 2s
-        permittedNumberOfCallsInHalfOpenState: 3
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 5s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 5s
         metrics:
           enabled: true
 
   retry:
     instances:
       "*":
-        maxAttempts: 3
-        waitDuration: 500ms
-        # Si deseas usar backoff exponencial, añade la propiedad para activarlo:
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2.0
-        # Ejemplo opcional: tiempo máximo de espera en backoff
-        # maxWaitDuration: 10s
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2.0
         metrics:
           enabled: true
 
   ratelimiter:
     instances:
       "*":
-        limitForPeriod: 10
-        limitRefreshPeriod: 1s
-        timeoutDuration: 100ms
+        limit-for-period: 10
+        limit-refresh-period: 1s
+        timeout-duration: 100ms
         metrics:
           enabled: true
 
@@ -73,10 +74,12 @@ logging:
     root: INFO
     com.example.resilience_library: DEBUG
 
-# Configuración para el monitoreo y reglas (sección propia de la librería)
+# -------------------------------------------------------------------
+# CONFIGURACIÓN ESPECÍFICA DE TU LIBRERÍA (monitoreo y reglas)
+# -------------------------------------------------------------------
 resilience:
   monitor:
-    interval: 30000
+    interval: 30000  # en milisegundos
   services:
     - name: catalog-service
       host: ${CATALOG_SERVICE_HOST:localhost}
