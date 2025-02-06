@@ -1,7 +1,13 @@
 rules:
+  # Si la latencia supera 200 ms, abre el Circuit Breaker
   - condition: "latency > 200"
     action: "circuitBreaker.open()"
-  - condition: "latency < 199"
+  # Si la latencia es menor o igual a 150 ms, cierra el Circuit Breaker
+  - condition: "latency <= 150"
     action: "circuitBreaker.close()"
+  # Si la tasa de error supera el 20%, abre el Circuit Breaker
   - condition: "errorRate > 0.2"
+    action: "circuitBreaker.open()"
+  # Si la tasa de llamadas lentas (slowCallRate) supera el 30%, abre el Circuit Breaker
+  - condition: "slowCallRate > 0.3"
     action: "circuitBreaker.open()"
