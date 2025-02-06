@@ -4,16 +4,14 @@ spring:
     port: 5672
     username: guest
     password: guest
-
   cloud:
     bus:
       enabled: true
     inetutils:
-      preferred-networks: 127.0.0.1
-      ignored-interfaces: eth0
-
+      preferredNetworks: 127.0.0.1
+      ignoredInterfaces: eth0
   application:
-    name: global-config  # Nombre global (opcional)
+    name: global-config  # Puedes definir aquí el nombre global o dejarlo para cada aplicación si lo prefieres
 
 server:
   port: 8080
@@ -22,7 +20,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"  # Se exponen todos los endpoints (incluido "circuitbreakers")
+        include: "*"
   endpoint:
     health:
       show-details: always
@@ -31,41 +29,47 @@ management:
     prometheus:
       enabled: true
 
-# -------------------------------------------------------------------
-# RESILIENCE4J (con KEBAB-CASE para evitar errores de binding)
-# -------------------------------------------------------------------
+# Configuración de Resilience4j (parámetros específicos para cada servicio)
 resilience4j:
-
   circuitbreaker:
     instances:
-      "*":
-        sliding-window-size: 10
-        minimum-number-of-calls: 5
-        failure-rate-threshold: 50
-        slow-call-rate-threshold: 50
-        slow-call-duration-threshold: 2s
-        permitted-number-of-calls-in-half-open-state: 3
-        automatic-transition-from-open-to-half-open-enabled: true
-        wait-duration-in-open-state: 5s
+      catalog-service:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10000ms
         metrics:
           enabled: true
-
+      order-service:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10000ms
+        metrics:
+          enabled: true
   retry:
     instances:
-      "*":
-        max-attempts: 3
-        wait-duration: 500ms
-        enable-exponential-backoff: true
-        exponential-backoff-multiplier: 2.0
+      order-service:
+        maxAttempts: 3
+        waitDuration: 500ms
         metrics:
           enabled: true
-
+  bulkhead:
+    instances:
+      "*":
+        metrics:
+          enabled: true
   ratelimiter:
     instances:
       "*":
-        limit-for-period: 10
-        limit-refresh-period: 1s
-        timeout-duration: 100ms
         metrics:
           enabled: true
 
@@ -74,12 +78,10 @@ logging:
     root: INFO
     com.example.resilience_library: DEBUG
 
-# -------------------------------------------------------------------
-# CONFIGURACIÓN ESPECÍFICA DE TU LIBRERÍA (monitoreo y reglas)
-# -------------------------------------------------------------------
+# Configuración para el monitoreo y reglas (sección propia de la librería)
 resilience:
   monitor:
-    interval: 30000  # en milisegundos
+    interval: 30000
   services:
     - name: catalog-service
       host: ${CATALOG_SERVICE_HOST:localhost}
