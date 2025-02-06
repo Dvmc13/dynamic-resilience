@@ -11,7 +11,7 @@ spring:
       preferredNetworks: 127.0.0.1
       ignoredInterfaces: eth0
   application:
-    name: global-config  # Puedes definir aquí el nombre global o dejarlo para cada aplicación si lo prefieres
+    name: global-config  # Nombre global (opcional)
 
 server:
   port: 8080
@@ -20,7 +20,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: "*"  # Se exponen todos los endpoints, incluido "circuitbreakers"
   endpoint:
     health:
       show-details: always
@@ -29,47 +29,34 @@ management:
     prometheus:
       enabled: true
 
-# Configuración de Resilience4j (parámetros específicos para cada servicio)
 resilience4j:
   circuitbreaker:
     instances:
-      catalog-service:
-        slidingWindowType: COUNT_BASED
+      "*":
         slidingWindowSize: 10
         minimumNumberOfCalls: 5
         failureRateThreshold: 50
         slowCallRateThreshold: 50
-        slowCallDurationThreshold: 2000ms
+        slowCallDurationThreshold: 2s
         permittedNumberOfCallsInHalfOpenState: 3
-        waitDurationInOpenState: 10000ms
-        metrics:
-          enabled: true
-      order-service:
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: 2000ms
-        permittedNumberOfCallsInHalfOpenState: 3
-        waitDurationInOpenState: 10000ms
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
         metrics:
           enabled: true
   retry:
     instances:
-      order-service:
+      "*":
         maxAttempts: 3
         waitDuration: 500ms
-        metrics:
-          enabled: true
-  bulkhead:
-    instances:
-      "*":
+        exponentialBackoffMultiplier: 2
         metrics:
           enabled: true
   ratelimiter:
     instances:
       "*":
+        limitForPeriod: 10
+        limitRefreshPeriod: 1s
+        timeoutDuration: 100ms
         metrics:
           enabled: true
 
