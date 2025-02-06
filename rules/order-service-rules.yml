@@ -3,10 +3,10 @@ rules:
   - condition: "latency > 300"
     action: "retry.maxAttempts = 2, retry.waitDuration = 500"
   # Si la tasa de error supera el 33%, abre el Circuit Breaker
-  - condition: "errorRate > 0.33"
+  - condition: "errorRate > 0.07"
     action: "circuitBreaker.open()"
   # Si la tasa de error es baja (por ejemplo, <= 0.2), cierra el Circuit Breaker
-  - condition: "errorRate <= 0.2"
+  - condition: "errorRate <= 0.5"
     action: "circuitBreaker.close()"
   # Si se detectan varios reintentos exitosos (indicativo de recuperación), se puede resetear la política de retry
   - condition: "retry.successfulWithRetry > 5"
