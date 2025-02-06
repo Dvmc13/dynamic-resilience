@@ -29,15 +29,37 @@ management:
     prometheus:
       enabled: true
 
+# Configuración de Resilience4j (parámetros específicos para cada servicio)
 resilience4j:
   circuitbreaker:
     instances:
-      "*":
+      catalog-service:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10000ms
+        metrics:
+          enabled: true
+      order-service:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10000ms
         metrics:
           enabled: true
   retry:
     instances:
-      "*":
+      order-service:
+        maxAttempts: 3
+        waitDuration: 500ms
         metrics:
           enabled: true
   bulkhead:
@@ -55,3 +77,26 @@ logging:
   level:
     root: INFO
     com.example.resilience_library: DEBUG
+
+# Configuración para el monitoreo y reglas (sección propia de la librería)
+resilience:
+  monitor:
+    interval: 30000
+  services:
+    - name: catalog-service
+      host: ${CATALOG_SERVICE_HOST:localhost}
+      port: ${CATALOG_SERVICE_PORT:8081}
+      metrics:
+        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
+        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
+        countEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
+      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/catalog-service-rules.yml
+
+    - name: order-service
+      host: ${ORDER_SERVICE_HOST:localhost}
+      port: ${ORDER_SERVICE_PORT:8082}
+      metrics:
+        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
+        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
+        countEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
+      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/order-service-rules.yml
