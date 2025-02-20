@@ -77,26 +77,3 @@ logging:
   level:
     root: INFO
     com.example.resilience_library: DEBUG
-
-# Configuración para el monitoreo y reglas (sección propia de la librería)
-resilience:
-  monitor:
-    interval: 30000
-  services:
-    - name: catalog-service
-      host: ${CATALOG_SERVICE_HOST:localhost}
-      port: ${CATALOG_SERVICE_PORT:8081}
-      metrics:
-        latencyEndpoint: /actuator/prometheus
-        errorEndpoint: /actuator/prometheus
-        countEndpoint: /actuator/prometheus
-      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/catalog-service-rules.yml
-
-    - name: order-service
-      host: ${ORDER_SERVICE_HOST:localhost}
-      port: ${ORDER_SERVICE_PORT:8082}
-      metrics:
-        latencyEndpoint: /actuator/prometheus
-        errorEndpoint: /actuator/prometheus
-        countEndpoint: /actuator/prometheus
-      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/order-service-rules.yml
