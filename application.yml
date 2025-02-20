@@ -87,16 +87,16 @@ resilience:
       host: ${CATALOG_SERVICE_HOST:localhost}
       port: ${CATALOG_SERVICE_PORT:8081}
       metrics:
-        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
-        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
-        countEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
+        latencyEndpoint: /actuator/prometheus
+        errorEndpoint: /actuator/prometheus
+        countEndpoint: /actuator/prometheus
       rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/catalog-service-rules.yml
 
     - name: order-service
       host: ${ORDER_SERVICE_HOST:localhost}
       port: ${ORDER_SERVICE_PORT:8082}
       metrics:
-        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
-        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
-        countEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
+        latencyEndpoint: /actuator/prometheus
+        errorEndpoint: /actuator/prometheus
+        countEndpoint: /actuator/prometheus
       rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/order-service-rules.yml
