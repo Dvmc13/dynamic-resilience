@@ -29,13 +29,13 @@ management:
     prometheus:
       enabled: true
 
-# Configuración de Resilience4j (valores por defecto; los microservicios pueden ser refrescados para aplicar overrides dinámicos)
+# Configuración de Resilience4j (valores por defecto que pueden ser actualizados dinámicamente)
 resilience4j:
   circuitbreaker:
     instances:
-      catalog-service:
+      frontend:
         slidingWindowType: COUNT_BASED
-        slidingWindowSize: 10
+        slidingWindowSize: 20
         minimumNumberOfCalls: 5
         failureRateThreshold: 50
         slowCallRateThreshold: 50
@@ -44,11 +44,10 @@ resilience4j:
         waitDurationInOpenState: 10000ms
         metrics:
           enabled: true
-        # Este campo se puede actualizar dinámicamente mediante el bus-refresh
-        forcedState: ${CATALOG_SERVICE_CIRCUIT_FORCED_STATE:}
-      order-service:
+        forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
+      microusers:
         slidingWindowType: COUNT_BASED
-        slidingWindowSize: 10
+        slidingWindowSize: 20
         minimumNumberOfCalls: 5
         failureRateThreshold: 50
         slowCallRateThreshold: 50
@@ -57,14 +56,39 @@ resilience4j:
         waitDurationInOpenState: 10000ms
         metrics:
           enabled: true
-        forcedState: ${ORDER_SERVICE_CIRCUIT_FORCED_STATE:}
+        forcedState: ${MICROUSERS_CIRCUIT_FORCED_STATE:}
+      microproducts:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10000ms
+        metrics:
+          enabled: true
+        forcedState: ${MICROPRODUCTS_CIRCUIT_FORCED_STATE:}
+      microorders:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2000ms
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10000ms
+        metrics:
+          enabled: true
+        forcedState: ${MICROORDERS_CIRCUIT_FORCED_STATE:}
   retry:
     instances:
-      order-service:
-        maxAttempts: ${ORDER_SERVICE_RETRY_MAX_ATTEMPTS:3}
-        waitDuration: ${ORDER_SERVICE_RETRY_WAIT_DURATION:500ms}
+      frontend:
+        maxAttempts: ${FRONTEND_RETRY_MAX_ATTEMPTS:3}
+        waitDuration: ${FRONTEND_RETRY_WAIT_DURATION:500ms}
         metrics:
           enabled: true
+      # Si es necesario, se pueden agregar configuraciones específicas para microusers, microproducts y microorders
   bulkhead:
     instances:
       "*":
