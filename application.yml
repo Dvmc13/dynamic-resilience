@@ -11,7 +11,7 @@ spring:
       preferredNetworks: 127.0.0.1
       ignoredInterfaces: eth0
   application:
-    name: global-config  # Puedes definir aquí el nombre global o dejarlo para cada aplicación si lo prefieres
+    name: global-config
 
 server:
   port: 8080
@@ -29,7 +29,7 @@ management:
     prometheus:
       enabled: true
 
-# Configuración de Resilience4j (parámetros específicos para cada servicio)
+# Configuración de Resilience4j (valores por defecto; los microservicios pueden ser refrescados para aplicar overrides dinámicos)
 resilience4j:
   circuitbreaker:
     instances:
@@ -44,6 +44,8 @@ resilience4j:
         waitDurationInOpenState: 10000ms
         metrics:
           enabled: true
+        # Este campo se puede actualizar dinámicamente mediante el bus-refresh
+        forcedState: ${CATALOG_SERVICE_CIRCUIT_FORCED_STATE:}
       order-service:
         slidingWindowType: COUNT_BASED
         slidingWindowSize: 10
@@ -55,11 +57,12 @@ resilience4j:
         waitDurationInOpenState: 10000ms
         metrics:
           enabled: true
+        forcedState: ${ORDER_SERVICE_CIRCUIT_FORCED_STATE:}
   retry:
     instances:
       order-service:
-        maxAttempts: 3
-        waitDuration: 500ms
+        maxAttempts: ${ORDER_SERVICE_RETRY_MAX_ATTEMPTS:3}
+        waitDuration: ${ORDER_SERVICE_RETRY_WAIT_DURATION:500ms}
         metrics:
           enabled: true
   bulkhead:
