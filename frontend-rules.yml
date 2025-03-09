@@ -1,0 +1,13 @@
+rules:
+  # Si la latencia supera 250 ms, fuerza la apertura del Circuit Breaker
+  - condition: "latency > 250"
+    action: "circuitBreaker.open()"
+  # Si la latencia es menor o igual a 200 ms, fuerza el cierre del Circuit Breaker
+  - condition: "latency <= 200"
+    action: "circuitBreaker.close()"
+  # Si la tasa de error supera el 10%, fuerza la apertura del Circuit Breaker
+  - condition: "errorRate > 0.1"
+    action: "circuitBreaker.open()"
+  # Si la tasa de error es muy baja, se cierra el Circuit Breaker
+  - condition: "errorRate <= 0.05"
+    action: "circuitBreaker.close()"
