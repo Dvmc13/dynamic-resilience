@@ -10,8 +10,13 @@ resilience:
         latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
         errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
       rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/catalog-service-rules.yml
-
-
+      # Propiedades dinámicas para actualizar resiliencia en catalog-service
+      circuitbreaker:
+        forcedState: ${CATALOG_SERVICE_CIRCUIT_FORCED_STATE:}  # Valores posibles: "open", "closed", o dejar en blanco
+      retry:
+        maxAttemptsOverride: ${CATALOG_SERVICE_RETRY_MAX_ATTEMPTS:}  # Ejemplo: 2
+        waitDurationOverride: ${CATALOG_SERVICE_RETRY_WAIT_DURATION:}  # Ejemplo: 500 (ms)
+      
     - name: order-service
       host: ${ORDER_SERVICE_HOST:order-service}
       port: ${ORDER_SERVICE_PORT:8082}
@@ -19,4 +24,9 @@ resilience:
         latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
         errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
       rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/order-service-rules.yml
-
+      # Propiedades dinámicas para actualizar resiliencia en order-service
+      circuitbreaker:
+        forcedState: ${ORDER_SERVICE_CIRCUIT_FORCED_STATE:}
+      retry:
+        maxAttemptsOverride: ${ORDER_SERVICE_RETRY_MAX_ATTEMPTS:}
+        waitDurationOverride: ${ORDER_SERVICE_RETRY_WAIT_DURATION:}
