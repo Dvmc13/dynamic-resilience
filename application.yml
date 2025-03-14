@@ -46,42 +46,6 @@ resilience4j:
         metrics:
           enabled: true
         forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
-      microusers:
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 20
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: 2000ms
-        permittedNumberOfCallsInHalfOpenState: 3
-        waitDurationInOpenState: 10000ms
-        metrics:
-          enabled: true
-        forcedState: ${MICROUSERS_CIRCUIT_FORCED_STATE:}
-      microproducts:
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 20
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: 2000ms
-        permittedNumberOfCallsInHalfOpenState: 3
-        waitDurationInOpenState: 10000ms
-        metrics:
-          enabled: true
-        forcedState: ${MICROPRODUCTS_CIRCUIT_FORCED_STATE:}
-      microorders:
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 20
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: 2000ms
-        permittedNumberOfCallsInHalfOpenState: 3
-        waitDurationInOpenState: 10000ms
-        metrics:
-          enabled: true
-        forcedState: ${MICROORDERS_CIRCUIT_FORCED_STATE:}
   retry:
     instances:
       frontend:
