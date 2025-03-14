@@ -1,6 +1,6 @@
 resilience:
   monitor:
-    interval: 40000
+    interval: 60000
 
   services:
     - name: frontend
@@ -15,42 +15,3 @@ resilience:
       retry:
         maxAttemptsOverride: ${FRONTEND_RETRY_MAX_ATTEMPTS:}
         waitDurationOverride: ${FRONTEND_RETRY_WAIT_DURATION:}
-
-    - name: microusers
-      host: ${MICROUSERS_HOST:microusers}
-      port: ${MICROUSERS_PORT:8081}
-      metrics:
-        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
-        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
-      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/microusers-rules.yml
-      circuitbreaker:
-        forcedState: ${MICROUSERS_CIRCUIT_FORCED_STATE:}
-      retry:
-        maxAttemptsOverride: ${MICROUSERS_RETRY_MAX_ATTEMPTS:}
-        waitDurationOverride: ${MICROUSERS_RETRY_WAIT_DURATION:}
-
-    - name: microproducts
-      host: ${MICROPRODUCTS_HOST:microproducts}
-      port: ${MICROPRODUCTS_PORT:8083}
-      metrics:
-        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
-        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
-      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/microproducts-rules.yml
-      circuitbreaker:
-        forcedState: ${MICROPRODUCTS_CIRCUIT_FORCED_STATE:}
-      retry:
-        maxAttemptsOverride: ${MICROPRODUCTS_RETRY_MAX_ATTEMPTS:}
-        waitDurationOverride: ${MICROPRODUCTS_RETRY_WAIT_DURATION:}
-
-    - name: microorders
-      host: ${MICROORDERS_HOST:microorders}
-      port: ${MICROORDERS_PORT:8082}
-      metrics:
-        latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
-        errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
-      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/microorders-rules.yml
-      circuitbreaker:
-        forcedState: ${MICROORDERS_CIRCUIT_FORCED_STATE:}
-      retry:
-        maxAttemptsOverride: ${MICROORDERS_RETRY_MAX_ATTEMPTS:}
-        waitDurationOverride: ${MICROORDERS_RETRY_WAIT_DURATION:}
