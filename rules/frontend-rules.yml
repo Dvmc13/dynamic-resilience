@@ -1,7 +1,10 @@
 rules:
-  # Regla 1: Si la latencia supera 250 ms, abrir el Circuit Breaker
-  - condition: "latency > 250"
-    action: "circuitBreaker.open()"
-  # Regla 2: Si la latencia es menor o igual a 200 ms, cerrar el Circuit Breaker
-  - condition: "latency <= 200"
-    action: "circuitBreaker.close()"
+  # Regla 1: Reintentar en errores 503 (Service Unavailable)
+  - condition: "response.status == 500"
+    action: |
+      if (retryCount < ${FRONTEND_RETRY_MAX_ATTEMPTS:3}) {
+        retryCount++;
+        retry(delay = ${FRONTEND_RETRY_WAIT_DURATION:500ms});
+      } else {
+        throw new ServiceUnavailableException("Falló después de ${FRONTEND_RETRY_MAX_ATTEMPTS:3} reintentos");
+      }
