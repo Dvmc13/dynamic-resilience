@@ -1,5 +1,5 @@
 rules:
-  # Regla 1: Reintentar en errores 503 (Service Unavailable)
+  # Regla 1: Reintentar en errores 500 (Internal Server Error)
   - condition: "response.status == 500"
     action: |
       if (retryCount < ${FRONTEND_RETRY_MAX_ATTEMPTS:3}) {
