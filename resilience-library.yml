@@ -1,11 +1,11 @@
 resilience:
   monitor:
-    interval: 60000
+    interval: 60000  # Intervalo en milisegundos para tareas internas (no se usa activamente en la nueva arquitectura)
 
   dynamicConfig:
-    # Umbral de error (porcentaje) para activar cambios dinámicos
+    # Umbral de error (porcentaje) para activar cambios dinámicos.
     errorRateThreshold: 50
-    # Valor a forzar para el circuit breaker cuando se supera el umbral (por ejemplo, "OPEN")
+    # Valor a forzar para el circuit breaker cuando se supera el umbral (por ejemplo, "OPEN").
     forcedStateValue: "OPEN"
 
   services:
@@ -13,8 +13,10 @@ resilience:
       host: ${FRONTEND_HOST:frontend}
       port: ${FRONTEND_PORT:8084}
       metrics:
+        # Endpoints para recolectar métricas (usados por el MetricsClient, si se requiere auditoría interna)
         latencyEndpoint: /actuator/prometheus?name=http_server_requests_seconds_sum
         errorEndpoint: /actuator/prometheus?name=http_server_requests_seconds_count
+      # La propiedad rulesFile se conserva para compatibilidad, pero la evaluación interna de reglas se deshabilita.
       rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/frontend-rules.yml
       circuitbreaker:
         forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
