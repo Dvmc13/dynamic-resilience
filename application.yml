@@ -29,8 +29,8 @@ management:
     prometheus:
       enabled: true
 
-# ConfiguraciÃ³n de Resilience4j: valores por defecto para cada servicio,
-# los cuales podrÃ¡n ser sobreescritos dinÃ¡micamente mediante variables de entorno.
+# Configuración de Resilience4j por defecto para cada servicio.
+# En la nueva arquitectura, la evaluación interna se deshabilita a favor de la lógica externa (Alertmanager/webhooks).
 resilience4j:
   circuitbreaker:
     instances:
@@ -53,7 +53,7 @@ resilience4j:
         waitDuration: ${FRONTEND_RETRY_WAIT_DURATION:500ms}
         metrics:
           enabled: true
-      # Si es necesario, puedes definir retry para otros servicios aquÃ­.
+      # Se pueden definir configuraciones para otros servicios si es necesario.
   bulkhead:
     instances:
       "*":
