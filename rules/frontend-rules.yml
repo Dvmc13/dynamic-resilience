@@ -1,10 +1,8 @@
-rules:
-  # Regla 1: Reintentar en errores 500 (Internal Server Error)
-  - condition: "response.status == 500"
-    action: |
-      if (retryCount < ${FRONTEND_RETRY_MAX_ATTEMPTS:3}) {
-        retryCount++;
-        retry(delay = ${FRONTEND_RETRY_WAIT_DURATION:500ms});
-      } else {
-        throw new ServiceUnavailableException("Falló después de ${FRONTEND_RETRY_MAX_ATTEMPTS:3} reintentos");
-      }
+# rules/frontend-circuitbreaker.yml
+circuit_breakers:
+  - name: frontendCircuitBreaker
+    base_config: default
+    overrides:
+      failure_rate_threshold: 50       # % de errores para abrir
+      wait_duration_in_open_state: 30s # Tiempo en estado abierto
+      sliding_window_size: 10          # Ventana de métricas (llamadas)
