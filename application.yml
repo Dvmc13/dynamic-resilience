@@ -29,8 +29,8 @@ management:
     prometheus:
       enabled: true
 
-# Configuración de Resilience4j: valores por defecto para cada servicio,
-# los cuales podrán ser sobreescritos dinámicamente mediante variables de entorno.
+# ConfiguraciÃ³n de Resilience4j: valores por defecto para cada servicio,
+# los cuales podrÃ¡n ser sobreescritos dinÃ¡micamente mediante variables de entorno.
 resilience4j:
   circuitbreaker:
     instances:
@@ -53,7 +53,7 @@ resilience4j:
         waitDuration: ${FRONTEND_RETRY_WAIT_DURATION:500ms}
         metrics:
           enabled: true
-      # Si es necesario, puedes definir retry para otros servicios aquí.
+      # Si es necesario, puedes definir retry para otros servicios aquÃ­.
   bulkhead:
     instances:
       "*":
