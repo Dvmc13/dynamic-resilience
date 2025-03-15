@@ -1,9 +1,13 @@
-# En tu repo: dynamic-resilience/resilience-library.yml
+# dynamic-resilience/resilience-library.yml
 resilience:
+  monitor:
+    interval: 30s  # Intervalo de chequeo de métricas
+
   services:
     - name: frontend
+      host: frontend  # Nombre del servicio en Docker Compose
+      port: 8084
       metrics:
-        url: http://frontend:8084/actuator/prometheus
-      circuit_breakers:
-        - name: frontendCircuitBreaker
-          rules_file: /rules/frontend-rules.yml
+        latencyEndpoint: /actuator/prometheus
+        errorEndpoint: /actuator/prometheus
+      rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/frontend-circuitbreaker.yml
