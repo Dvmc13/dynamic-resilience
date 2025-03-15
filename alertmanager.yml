@@ -1,0 +1,7 @@
+# alertmanager.yml (debes crearlo)
+route:
+  receiver: 'resilience-webhook'
+receivers:
+- name: 'resilience-webhook'
+  webhook_configs:
+  - url: 'http://resilience-library:8080/api/alerts'  # Endpoint en tu biblioteca
