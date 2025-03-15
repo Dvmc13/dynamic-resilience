@@ -53,7 +53,6 @@ resilience4j:
         waitDuration: ${FRONTEND_RETRY_WAIT_DURATION:500ms}
         metrics:
           enabled: true
-      # Se pueden definir configuraciones para otros servicios si es necesario.
   bulkhead:
     instances:
       "*":
@@ -69,3 +68,11 @@ logging:
   level:
     root: INFO
     com.example.resilience_library: DEBUG
+
+# Configuración de credenciales para el repositorio de configuración.
+# Aunque el repositorio es público, para realizar operaciones de escritura (commit & push)
+# es necesario autenticarse. Usa tu usuario de GitHub y un token de acceso personal (PAT).
+config:
+  repo:
+    username: "Dvmc13"    # Reemplaza con tu usuario de GitHub.
+    password: "your-github-token"        # Reemplaza con tu token de acceso personal (PAT).
