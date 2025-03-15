@@ -75,4 +75,4 @@ logging:
 config:
   repo:
     username: "Dvmc13"    # Reemplaza con tu usuario de GitHub.
-    password: "your-github-token"        # Reemplaza con tu token de acceso personal (PAT).
+    password: "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"        # Reemplaza con tu token de acceso personal (PAT).
