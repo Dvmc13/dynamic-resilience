@@ -19,7 +19,7 @@ resilience:
       # La propiedad rulesFile se conserva para compatibilidad, pero la evaluación interna de reglas se deshabilita.
       rulesFile: https://raw.githubusercontent.com/Dvmc13/dynamic-resilience/main/rules/frontend-rules.yml
       circuitbreaker:
-        forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
+        forcedState: OPEN
       retry:
         maxAttemptsOverride: ${FRONTEND_RETRY_MAX_ATTEMPTS:}
         waitDurationOverride: ${FRONTEND_RETRY_WAIT_DURATION:}
