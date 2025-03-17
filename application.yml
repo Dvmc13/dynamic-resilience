@@ -68,10 +68,10 @@ logging:
   level:
     root: INFO
     com.example.resilience_library: DEBUG
+    org.springframework.core.env: DEBUG
 
 # Configuración de credenciales para el repositorio de configuración.
-# Aunque el repositorio es público, para realizar operaciones de escritura (commit & push)
-# es necesario autenticarse. Usa tu usuario de GitHub y un token de acceso personal (PAT).
+# Se leen desde variables de entorno para no incluirlas directamente en el archivo.
 config:
   repo:
     username: ${CONFIG_REPO_USERNAME:}
