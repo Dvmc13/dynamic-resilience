@@ -74,5 +74,5 @@ logging:
 # es necesario autenticarse. Usa tu usuario de GitHub y un token de acceso personal (PAT).
 config:
   repo:
-    username: "Dvmc13"    # Reemplaza con tu usuario de GitHub.
-    password: "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"        # Reemplaza con tu token de acceso personal (PAT).
+    username: ${CONFIG_REPO_USERNAME:}
+    password: ${CONFIG_REPO_PASSWORD:}
