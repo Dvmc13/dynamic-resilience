@@ -1,0 +1,18 @@
+resilience4j:
+  ratelimiter:
+    configs:
+      default:
+        limit-for-period: 50          # Máximo 50 solicitudes por periodo
+        limit-refresh-period: 1s      # Ventana temporal de 1 segundo
+        timeout-duration: 100ms       # Tiempo de espera para obtener permiso
+        register-health-indicator: true
+
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            key-resolver: "#{@userKeyResolver}"
+            redis-rate-limiter.replenish-rate: 50
+            redis-rate-limiter.burst-capacity: 100
