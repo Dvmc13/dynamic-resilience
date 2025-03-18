@@ -1,10 +1,9 @@
 rules:
-  # Regla 1: Reintentar en errores 500 (Internal Server Error)
   - condition: "response.status == 500"
     action: |
-      if (retryCount < ${FRONTEND_RETRY_MAX_ATTEMPTS:3}) {
+      if (retryCount < ${retry.maxAttempts:3}) {
         retryCount++;
-        retry(delay = ${FRONTEND_RETRY_WAIT_DURATION:500ms});
+        retry(delay = ${retry.waitDuration:500ms});
       } else {
-        throw new ServiceUnavailableException("FallÃ³ despuÃ©s de ${FRONTEND_RETRY_MAX_ATTEMPTS:3} reintentos");
+        throw new ServiceUnavailableException("Falló después de ${retry.maxAttempts:3} reintentos");
       }
