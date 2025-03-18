@@ -1,0 +1,31 @@
+spring:
+  profiles: prod
+  application:
+    name: frontend
+
+resilience:
+  services:
+    frontend:
+      host: ${FRONTEND_PROD_HOST:frontend-prod}
+      port: ${FRONTEND_PROD_PORT:8080}
+      circuitbreaker:
+        forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
+        metrics:
+          enabled: true
+      retry:
+        maxAttemptsOverride: ${FRONTEND_RETRY_MAX_ATTEMPTS_PROD:2}
+        waitDurationOverride: ${FRONTEND_RETRY_WAIT_DURATION_PROD:1s}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: on-demand
+
+logging:
+  level:
+    root: WARN
+    com.example.frontend: INFO
