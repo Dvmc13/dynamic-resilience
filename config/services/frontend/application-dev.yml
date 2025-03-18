@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: frontend
+  
+resilience:
+  services:
+    frontend:
+      host: localhost
+      port: 8080
+      circuitbreaker:
+        forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
+      retry:
+        maxAttemptsOverride: 3
+        waitDurationOverride: 500ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
