@@ -1,6 +1,0 @@
-spring:
-  profiles: dev
-
-resilience:
-  monitor:
-    interval: 15s  # Monitoreo más frecuente en desarrollo
