@@ -1,7 +1,9 @@
 spring:
-  profiles: prod
   application:
     name: frontend
+  config:
+    activate:
+      on-profile: prod
 
 resilience:
   services:
