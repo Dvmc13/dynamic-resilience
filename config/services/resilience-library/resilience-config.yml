@@ -1,0 +1,29 @@
+spring:
+  cloud:
+    gateway:
+      httpclient:
+        response-timeout: 5s          # Timeout global para respuestas
+        connect-timeout: 2s
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      gateway-core:
+        base-config: default
+        wait-duration-in-open-state: 45s  # Mayor tiempo en producción
+        failure-rate-threshold: 60
+
+  retry:
+    instances:
+      gateway-retry:
+        max-attempts: 3
+        wait-duration: 750ms
+
+  bulkhead:
+    instances:
+      gateway-requests:
+        max-concurrent-calls: 200
+        max-wait-duration: 50ms
+
+alerting:
+  webhook-url: ${RESILIENCE_WEBHOOK:http://alertmanager:9093/api/v1/alerts}
