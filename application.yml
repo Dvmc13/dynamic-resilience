@@ -1,78 +1,25 @@
+# Configuración Global
 spring:
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
   cloud:
     bus:
       enabled: true
-    inetutils:
-      preferredNetworks: 127.0.0.1
-      ignoredInterfaces: eth0
-  application:
-    name: global-config
+    config:
+      server:
+        git:
+          search-paths: 
+            - 'config/global'
+            - 'config/services/{application}'
+            - 'config/{profile}'
 
-server:
-  port: 8080
+# Configuración Base RabbitMQ
+rabbitmq:
+  host: ${RABBITMQ_HOST:localhost}
+  port: ${RABBITMQ_PORT:5672}
+  username: ${RABBITMQ_USER:guest}
+  password: ${RABBITMQ_PASS:guest}
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
-    refresh:
-      enabled: true
-    prometheus:
-      enabled: true
-
-# Configuración de Resilience4j por defecto para cada servicio.
-# En la nueva arquitectura, la evaluación interna se deshabilita a favor de la lógica externa (Alertmanager/webhooks).
-resilience4j:
-  circuitbreaker:
-    instances:
-      frontend:
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 20
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 50
-        slowCallRateThreshold: 50
-        slowCallDurationThreshold: 2000ms
-        permittedNumberOfCallsInHalfOpenState: 3
-        waitDurationInOpenState: 10000ms
-        metrics:
-          enabled: true
-        forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
-  retry:
-    instances:
-      frontend:
-        maxAttempts: ${FRONTEND_RETRY_MAX_ATTEMPTS:3}
-        waitDuration: ${FRONTEND_RETRY_WAIT_DURATION:500ms}
-        metrics:
-          enabled: true
-  bulkhead:
-    instances:
-      "*":
-        metrics:
-          enabled: true
-  ratelimiter:
-    instances:
-      "*":
-        metrics:
-          enabled: true
-
-logging:
-  level:
-    root: INFO
-    com.example.resilience_library: DEBUG
-    org.springframework.core.env: DEBUG
-
-# Configuración de credenciales para el repositorio de configuración.
-# Se leen desde variables de entorno para no incluirlas directamente en el archivo.
-config:
-  repo:
-    username: ${CONFIG_REPO_USERNAME:}
-    password: ${CONFIG_REPO_PASSWORD:}
+# Configuración de Seguridad (Placeholders)
+security:
+  config-repo:
+    username: ${CONFIG_REPO_USER:}
+    password: ${CONFIG_REPO_PASS:}
