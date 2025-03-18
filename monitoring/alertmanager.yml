@@ -11,5 +11,5 @@ route:
 receivers:
   - name: 'resilience-webhook'
     webhook_configs:
-      - url: 'http://resilience-library:8080/webhook/alert'
+      - url: 'http://${GATEWAY_HOST:resilience-library}:${GATEWAY_PORT:8080}/webhook/alert'
         send_resolved: true
