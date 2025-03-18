@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auto_routing
+          uri: lb://${serviceName}
+          predicates:
+            - Path=/api/{serviceName}/**
+          filters:
+            - StripPrefix=1
+            - name: CircuitBreaker
+              args:
+                name: default
+                fallbackUri: forward:/fallback
