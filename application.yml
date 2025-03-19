@@ -7,10 +7,12 @@ spring:
       server:
         git:
           uri: https://github.com/Dvmc13/dynamic-resilience.git
+          default-label: main 
           search-paths: 
             - 'config/global'
             - 'config/services/{application}'
             - 'config/{profile}'
+          force-pull: true # Forzar siempre última versión
 
 # Configuración Base RabbitMQ
 rabbitmq:
