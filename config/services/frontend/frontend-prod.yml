@@ -4,6 +4,16 @@ spring:
   config:
     activate:
       on-profile: prod
+  cloud:
+    config:
+      fail-fast: true
+
+server:
+  port: 8080
+  tomcat:
+    max-threads: 300
+    max-connections: 2000
+    connection-timeout: 3s
 
 resilience:
   services:
@@ -11,23 +21,94 @@ resilience:
       host: ${FRONTEND_PROD_HOST:frontend-prod}
       port: ${FRONTEND_PROD_PORT:8080}
       circuitbreaker:
+        enabled: true
         forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
         metrics:
           enabled: true
+          sliding-window-size: 200
+          failure-rate-threshold: 30  # Más estricto en producción
       retry:
+        enabled: true
         maxAttemptsOverride: ${FRONTEND_RETRY_MAX_ATTEMPTS_PROD:2}
         waitDurationOverride: ${FRONTEND_RETRY_WAIT_DURATION_PROD:1s}
+      ratelimiter:
+        enabled: true
+        limitForPeriod: 50
+        limitRefreshPeriod: 1s
+      bulkhead:
+        enabled: true
+        maxConcurrentCalls: 200
+        maxWaitDuration: 30ms
 
+# Configuración para exponer métricas a Prometheus
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus,metrics
+      base-path: /management
   endpoint:
     health:
       show-details: on-demand
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: frontend
+      environment: production
+    export:
+      prometheus:
+        enabled: true
 
+# Configuración Resilience4j para producción
+resilience4j:
+  circuitbreaker:
+    instances:
+      frontend:
+        registerHealthIndicator: true
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 200
+        failureRateThreshold: 30
+        waitDurationInOpenState: 60s
+        permittedNumberOfCallsInHalfOpenState: 10
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        eventConsumerBufferSize: 50
+  retry:
+    instances:
+      frontend:
+        maxAttempts: 2
+        waitDuration: 1s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+  bulkhead:
+    instances:
+      frontend:
+        maxConcurrentCalls: 200
+        maxWaitDuration: 30ms
+  ratelimiter:
+    instances:
+      frontend:
+        limitForPeriod: 50
+        limitRefreshPeriod: 1s
+        timeoutDuration: 100ms
+        registerHealthIndicator: true
+
+# Ajustes de logging para producción
 logging:
   level:
     root: WARN
     com.example.frontend: INFO
+    org.springframework.web: WARN
+    org.springframework.cloud.circuit.breaker: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/frontend-service.log
+    max-size: 100MB
+    max-history: 30
+
+# Deshabilitado en producción
+chaos:
+  monkey:
+    enabled: false
