@@ -22,7 +22,7 @@ rabbitmq:
   password: ${RABBITMQ_PASS:guest}
 
 # Configuración de Seguridad (Placeholders)
-security:
-  config-repo:
-    username: ${CONFIG_REPO_USER:}
-    password: ${CONFIG_REPO_PASS:}
+#security:
+  #config-repo:
+    #username: ${CONFIG_REPO_USER:}
+    #password: ${CONFIG_REPO_PASS:}
