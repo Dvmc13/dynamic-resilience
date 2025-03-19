@@ -1,23 +1,74 @@
 spring:
+  application:
+    name: resilience-library
   cloud:
     gateway:
       httpclient:
-        response-timeout: 5s          # Timeout global para respuestas
+        response-timeout: 5s
         connect-timeout: 2s
+      metrics:
+        enabled: true
+      actuator:
+        verbose:
+          enabled: true
+  main:
+    web-application-type: reactive
 
+# Configuración específica de la librería de resiliencia
+resilience:
+  enabled: true
+  services:
+    frontend:
+      host: ${FRONTEND_HOST:frontend}
+      port: ${FRONTEND_PORT:8080}
+      circuit-breaker:
+        enabled: true
+      retry:
+        enabled: true
+      rate-limiter:
+        enabled: true
+      bulkhead:
+        enabled: true
+  response-templates:
+    circuit-open: |
+      {
+        "status": "SERVICE_UNAVAILABLE",
+        "message": "El servicio está temporalmente no disponible. Por favor intente más tarde.",
+        "timestamp": "${timestamp}",
+        "path": "${path}"
+      }
+    rate-limited: |
+      {
+        "status": "TOO_MANY_REQUESTS",
+        "message": "Has excedido el límite de solicitudes. Por favor espera e intenta nuevamente.",
+        "resetAt": "${resetTime}",
+        "path": "${path}"
+      }
+
+# Configuraciones detalladas de Resilience4j
 resilience4j:
   circuitbreaker:
     instances:
       gateway-core:
         base-config: default
-        wait-duration-in-open-state: 45s  # Mayor tiempo en producción
+        wait-duration-in-open-state: 45s
         failure-rate-threshold: 60
+        event-consumer-buffer-size: 100
+      frontend-service:
+        base-config: default
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        sliding-window-size: 100
 
   retry:
     instances:
       gateway-retry:
         max-attempts: 3
         wait-duration: 750ms
+        retry-exceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
 
   bulkhead:
     instances:
@@ -25,5 +76,64 @@ resilience4j:
         max-concurrent-calls: 200
         max-wait-duration: 50ms
 
+  timelimiter:
+    instances:
+      gateway-timeout:
+        timeout-duration: 5s
+        cancel-running-future: true
+
+  ratelimiter:
+    instances:
+      gateway-limiter:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 0
+        register-health-indicator: true
+
+# Configuración para exponer métricas
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    gateway:
+      enabled: true
+  metrics:
+    tags:
+      application: resilience-library
+    export:
+      prometheus:
+        enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+
+# Configuración para alertas
 alerting:
+  enabled: true
   webhook-url: ${RESILIENCE_WEBHOOK:http://alertmanager:9093/api/v1/alerts}
+  threshold:
+    circuit-breaker-open: 60000  # Alerta si el CB permanece abierto más de 60s
+    high-failure-rate: 70        # Alerta si la tasa de fallos supera el 70%
+    high-latency-ms: 2000        # Alerta si la latencia supera 2000ms
+
+# Redis para rate limiting distribuido
+spring.redis:
+  host: ${REDIS_HOST:localhost}
+  port: ${REDIS_PORT:6379}
+  
+# Logging específico
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.cloud.gateway.filter: INFO
+    org.springframework.cloud.gateway.route: INFO
+    org.springframework.web.reactive: INFO
+    io.github.resilience4j: INFO
