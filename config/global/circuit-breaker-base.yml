@@ -1,5 +1,5 @@
 resilience4j:
-  circuitbreaker:
+  circuitBreaker:
     configs:
       default:
         slidingWindowType: COUNT_BASED
