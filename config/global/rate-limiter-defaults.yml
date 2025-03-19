@@ -2,9 +2,17 @@ resilience4j:
   ratelimiter:
     configs:
       default:
-        limit-for-period: 50          # Máximo 50 solicitudes por periodo
-        limit-refresh-period: 1s      # Ventana temporal de 1 segundo
-        timeout-duration: 100ms       # Tiempo de espera para obtener permiso
+        limit-for-period: 50
+        limit-refresh-period: 1s
+        timeout-duration: 100ms
+        register-health-indicator: true
+    instances:
+      default:
+        base-config: default
+      frontend:
+        limit-for-period: 30
+        limit-refresh-period: 1s
+        timeout-duration: 200ms
         register-health-indicator: true
 
 spring:
@@ -16,3 +24,14 @@ spring:
             key-resolver: "#{@userKeyResolver}"
             redis-rate-limiter.replenish-rate: 50
             redis-rate-limiter.burst-capacity: 100
+
+management:
+  health:
+    ratelimiters:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
