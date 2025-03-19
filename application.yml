@@ -21,6 +21,11 @@ rabbitmq:
   username: ${RABBITMQ_USER:guest}
   password: ${RABBITMQ_PASS:guest}
 
+  logging:
+  level:
+    org.springframework.cloud.config: TRACE  # ← Cambiar de WARN a TRACE
+    org.eclipse.jgit: DEBUG                  # ← Para ver operaciones Git
+
 # Configuración de Seguridad (Placeholders)
 #security:
   #config-repo:
