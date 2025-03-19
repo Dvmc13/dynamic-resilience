@@ -9,6 +9,40 @@ resilience4j:
         waitDurationInOpenState: 30s
         permittedNumberOfCallsInHalfOpenState: 5
         automaticTransitionFromOpenToHalfOpenEnabled: true
-        recordExceptions: 
+        registerHealthIndicator: true
+        recordExceptions:
           - org.springframework.web.reactive.function.client.WebClientResponseException
           - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - java.net.ConnectException
+    instances:
+      default:
+        baseConfig: default
+      frontend:
+        baseConfig: default
+        slidingWindowSize: 50
+        waitDurationInOpenState: 20s
+        failureRateThreshold: 40
+        eventConsumerBufferSize: 20
+
+# Configuración de métricas para circuit breaker
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    export:
+      prometheus:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+      group:
+        circuitbreakers:
+          include: circuitBreakers
