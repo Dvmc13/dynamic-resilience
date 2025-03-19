@@ -1,4 +1,4 @@
-# Configuración Global
+# Configuración Global del Config Server
 spring:
   cloud:
     bus:
@@ -7,24 +7,43 @@ spring:
       server:
         git:
           uri: https://github.com/Dvmc13/dynamic-resilience.git
-          default-label: main 
-          search-paths: 
+          default-label: main
+          search-paths:
             - 'config/global'
             - 'config/services/{application}'
             - 'config/{profile}'
-          force-pull: true # Forzar siempre última versión
+          force-pull: true
+          timeout: 10
+          clone-on-start: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASS:guest}
 
-# Configuración Base RabbitMQ
-rabbitmq:
-  host: ${RABBITMQ_HOST:localhost}
-  port: ${RABBITMQ_PORT:5672}
-  username: ${RABBITMQ_USER:guest}
-  password: ${RABBITMQ_PASS:guest}
-
-  logging:
+# Mejora de logs para diagnóstico
+logging:
   level:
-    org.springframework.cloud.config: TRACE  # ← Cambiar de WARN a TRACE
-    org.eclipse.jgit: DEBUG                  # ← Para ver operaciones Git
+    org.springframework.cloud.config: DEBUG
+    org.springframework.cloud.bus: DEBUG
+    org.eclipse.jgit: DEBUG
+    org.springframework.boot.actuate: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    refresh:
+      enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
 
 # Configuración de Seguridad (Placeholders)
 #security:
