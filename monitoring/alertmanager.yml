@@ -28,7 +28,7 @@ receivers:
         send_resolved: true
         http_config:
           timeout: 5s
-  
+
   - name: 'resilience-critical'
     email_configs:
       - to: 'admin@example.com'
