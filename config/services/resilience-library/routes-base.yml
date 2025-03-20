@@ -2,13 +2,88 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: auto_routing
+        - id: frontend_route
+          uri: ${resilience.services.frontend.scheme:http}://${resilience.services.frontend.host:frontend}:${resilience.services.frontend.port:8080}
+          predicates:
+            - Path=/api/frontend/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: frontend-service
+                fallbackUri: forward:/fallback/frontend
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET,POST
+                series: SERVER_ERROR
+                exceptions: java.io.IOException,java.util.concurrent.TimeoutException
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                rate-limiter.type: REDIS
+                key-resolver: "#{@ipKeyResolver}"
+            - name: Bulkhead
+              args:
+                name: frontend-bulkhead
+                max-concurrent-calls: 100
+            - StripPrefix=2
+            - name: RequestSize
+              args:
+                maxSize: 5MB
+            - name: ResponseTimeout
+              args:
+                timeout: 5s
+            - AddResponseHeader=X-Response-Time, $\{responseTime:0}
+            - AddResponseHeader=X-Circuit-State, $\{circuitBreakerState:unknown}
+
+        - id: dynamic_service_route
           uri: lb://${serviceName}
           predicates:
             - Path=/api/{serviceName}/**
           filters:
-            - StripPrefix=1
             - name: CircuitBreaker
               args:
                 name: default
-                fallbackUri: forward:/fallback
+                fallbackUri: forward:/fallback/{serviceName}
+            - name: Retry
+              args:
+                retries: 3
+                methods: GET
+                series: SERVER_ERROR
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                key-resolver: "#{@userKeyResolver}"
+            - StripPrefix=2
+            - name: AddResponseHeader
+              args:
+                name: X-Resilience-Gateway
+                value: 'true'
+
+        - id: metrics_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/actuator/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: metrics-cb
+                fallbackUri: forward:/metrics-fallback
+            - name: Retry
+              args:
+                retries: 2
+                methods: GET
+
+        - id: fallback_route
+          uri: http://localhost:8080
+          predicates:
+            - Path=/fallback/**
+          filters:
+            - name: FallbackHeaders
+              args:
+                executionExceptionTypeHeaderName: X-Execution-Exception-Type
+                executionExceptionMessageHeaderName: X-Execution-Exception-Message
+                rootCauseExceptionTypeHeaderName: X-Root-Cause-Exception-Type
+                rootCauseExceptionMessageHeaderName: X-Root-Cause-Exception-Message
