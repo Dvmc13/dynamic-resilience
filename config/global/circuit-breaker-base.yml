@@ -25,7 +25,6 @@ resilience4j:
         failureRateThreshold: 40
         eventConsumerBufferSize: 20
 
-# Configuración de métricas para circuit breaker
 management:
   health:
     circuitbreakers:
