@@ -87,7 +87,7 @@ functions:
       function isHealthCheckEndpoint(path) {
         return path.endsWith("/health") || path.endsWith("/ping");
       }
-  
+
   - name: "extractErrorType"
     code: |
       function extractErrorType(body) {
@@ -95,7 +95,7 @@ functions:
         const match = body.match(/ERR_BUSINESS_LOGIC\[(.*?)\]/);
         return match ? match[1] : "UNKNOWN";
       }
-  
+
   - name: "fallbackToCache"
     code: |
       function fallbackToCache() {
@@ -110,7 +110,7 @@ functions:
           });
         }
       }
-  
+
   - name: "useDefaultValue"
     code: |
       function useDefaultValue() {
@@ -123,7 +123,7 @@ functions:
           return response;
         }
       }
-  
+
   - name: "exponentialBackoff"
     code: |
       function exponentialBackoff(baseDelay, multiplier) {
