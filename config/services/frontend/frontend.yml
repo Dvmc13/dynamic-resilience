@@ -17,31 +17,42 @@ server:
     connection-timeout: 5s
 
 resilience:
-  services:
-    frontend:
-      host: localhost
-      port: 8080
-      circuitbreaker:
-        enabled: true
-        forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
-        metrics:
+  gateway:
+    services:
+      frontend:
+        host: localhost
+        port: 8080
+        circuitBreaker:
           enabled: true
-          sliding-window-size: 100
-          failure-rate-threshold: 50
-      retry:
-        enabled: true
-        maxAttempts: 3
-        waitDuration: 500ms
-      ratelimiter:
-        enabled: true
-        limitForPeriod: 20
-        limitRefreshPeriod: 1s
-      bulkhead:
-        enabled: true
-        maxConcurrentCalls: 100
-        maxWaitDuration: 50ms
+          forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
+          metrics:
+            enabled: true
+          slidingWindowSize: 100
+          failureRateThreshold: 50
+          waitDurationInOpenState: 30
+          permittedCallsInHalfOpen: 5
+          automaticTransitionFromOpenToHalfOpenEnabled: true
+          minimumNumberOfCalls: 10
+          fallbackUri: forward:/fallback/frontend
+        retry:
+          enabled: true
+          maxAttempts: 3
+          waitDuration: 500ms
+          enableExponentialBackoff: true
+          exponentialBackoffMultiplier: 2
+          fallbackUri: forward:/fallback/retry-exhausted
+        rateLimiter:
+          enabled: true
+          limitForPeriod: 20
+          limitRefreshPeriod: 1s
+          timeoutDuration: 200ms
+          fallbackUri: forward:/fallback/rate-limited
+        bulkhead:
+          enabled: true
+          maxConcurrentCalls: 100
+          maxWaitDuration: 50ms
+          fallbackUri: forward:/fallback/bulkhead-full
 
-# Configuración para exponer métricas a Prometheus
 management:
   endpoints:
     web:
@@ -62,57 +73,3 @@ management:
     export:
       prometheus:
         enabled: true
-
-# Uso de Resilience4j directamente
-resilience4j:
-  circuitbreaker:
-    instances:
-      frontend:
-        registerHealthIndicator: true
-        slidingWindowType: COUNT_BASED
-        slidingWindowSize: 100
-        failureRateThreshold: 50
-        waitDurationInOpenState: 30s
-        permittedNumberOfCallsInHalfOpenState: 5
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        eventConsumerBufferSize: 10
-  retry:
-    instances:
-      frontend:
-        maxAttempts: 3
-        waitDuration: 500ms
-        enableExponentialBackoff: true
-        exponentialBackoffMultiplier: 2
-        retryExceptions:
-          - java.io.IOException
-          - java.net.ConnectException
-  bulkhead:
-    instances:
-      frontend:
-        maxConcurrentCalls: 100
-        maxWaitDuration: 50ms
-  ratelimiter:
-    instances:
-      frontend:
-        limitForPeriod: 20
-        limitRefreshPeriod: 1s
-        timeoutDuration: 0
-        registerHealthIndicator: true
-
-# Simulador de fallos para pruebas
-chaos:
-  monkey:
-    enabled: ${CHAOS_MONKEY_ENABLED:false}
-    watcher:
-      restController: true
-      service: true
-    assaults:
-      level: ${CHAOS_LEVEL:5}
-      latency:
-        enabled: ${LATENCY_ENABLED:false}
-        timeRangeStart: 1000
-        timeRangeEnd: 5000
-      exceptions:
-        enabled: ${EXCEPTIONS_ENABLED:false}
-        type: java.io.IOException
-        randomize: true
