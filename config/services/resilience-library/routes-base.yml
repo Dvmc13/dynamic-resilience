@@ -1,89 +1,132 @@
-spring:
-  cloud:
-    gateway:
-      routes:
-        - id: frontend_route
-          uri: ${resilience.services.frontend.scheme:http}://${resilience.services.frontend.host:frontend}:${resilience.services.frontend.port:8080}
-          predicates:
-            - Path=/api/frontend/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: frontend-service
-                fallbackUri: forward:/fallback/frontend
-            - name: Retry
-              args:
-                retries: 3
-                methods: GET,POST
-                series: SERVER_ERROR
-                exceptions: java.io.IOException,java.util.concurrent.TimeoutException
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 20
-                redis-rate-limiter.burstCapacity: 40
-                rate-limiter.type: REDIS
-                key-resolver: "#{@ipKeyResolver}"
-            - name: Bulkhead
-              args:
-                name: frontend-bulkhead
-                max-concurrent-calls: 100
-            - StripPrefix=2
-            - name: RequestSize
-              args:
-                maxSize: 5MB
-            - name: ResponseTimeout
-              args:
-                timeout: 5s
-            - AddResponseHeader=X-Response-Time, $\{responseTime:0}
-            - AddResponseHeader=X-Circuit-State, $\{circuitBreakerState:unknown}
+# Reglas de resiliencia para el servicio frontend
+rules:
+  # Regla para errores de servidor (500)
+  - name: "Server Error Retry"
+    condition: "response.status >= 500"
+    action: |
+      if (retryCount < ${retry.maxAttempts:3}) {
+        retryCount++;
+        retry(delay = ${retry.waitDuration:500ms});
+      } else {
+        throw new ServiceUnavailableException("Falló después de ${retry.maxAttempts:3} reintentos");
+      }
+    metrics:
+      - name: "retry_failures_total"
+        description: "Total number of retry failures"
+        labels:
+          service: "frontend"
+          statusCode: "${response.status}"
 
-        - id: dynamic_service_route
-          uri: lb://${serviceName}
-          predicates:
-            - Path=/api/{serviceName}/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: default
-                fallbackUri: forward:/fallback/{serviceName}
-            - name: Retry
-              args:
-                retries: 3
-                methods: GET
-                series: SERVER_ERROR
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 50
-                redis-rate-limiter.burstCapacity: 100
-                key-resolver: "#{@userKeyResolver}"
-            - StripPrefix=2
-            - name: AddResponseHeader
-              args:
-                name: X-Resilience-Gateway
-                value: 'true'
+  # Regla para tiempos de respuesta excesivos
+  - name: "Slow Response"
+    condition: "response.time > 2000"
+    action: |
+      logWarning("Respuesta lenta detectada: " + response.time + "ms");
+      recordMetric("slow_response_total", 1, {"endpoint": request.path});
+      if (response.time > 5000) {
+        // Si es extremadamente lento, agregarlo a las métricas del circuit breaker
+        markAsFailure();
+      }
+    metrics:
+      - name: "slow_response_total"
+        description: "Total number of slow responses"
+        labels:
+          service: "frontend"
+          threshold: "2000ms"
 
-        - id: metrics_route
-          uri: http://localhost:8080
-          predicates:
-            - Path=/actuator/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: metrics-cb
-                fallbackUri: forward:/metrics-fallback
-            - name: Retry
-              args:
-                retries: 2
-                methods: GET
+  # Regla para errores de conexión
+  - name: "Connection Error"
+    condition: "exception instanceof java.net.ConnectException"
+    action: |
+      if (retryCount < ${retry.maxAttempts:3}) {
+        retryCount++;
+        exponentialBackoff(baseDelay = ${retry.waitDuration:500ms}, multiplier = 2);
+      } else {
+        fallbackToCache();
+      }
+    metrics:
+      - name: "connection_failures_total"
+        description: "Total number of connection failures"
+        labels:
+          service: "frontend"
+          exception: "${exception.class.simpleName}"
 
-        - id: fallback_route
-          uri: http://localhost:8080
-          predicates:
-            - Path=/fallback/**
-          filters:
-            - name: FallbackHeaders
-              args:
-                executionExceptionTypeHeaderName: X-Execution-Exception-Type
-                executionExceptionMessageHeaderName: X-Execution-Exception-Message
-                rootCauseExceptionTypeHeaderName: X-Root-Cause-Exception-Type
-                rootCauseExceptionMessageHeaderName: X-Root-Cause-Exception-Message
+  # Regla para respuestas vacías
+  - name: "Empty Response"
+    condition: "response.body == null || response.body.isEmpty()"
+    action: |
+      if (!isHealthCheckEndpoint(request.path)) {
+        logWarning("Respuesta vacía detectada para: " + request.path);
+        useDefaultValue();
+      }
+    metrics:
+      - name: "empty_response_total"
+        description: "Total number of empty responses"
+        labels:
+          service: "frontend"
+          endpoint: "${request.path}"
+
+  # Regla para errores específicos de dominio
+  - name: "Business Logic Error"
+    condition: "response.body.contains('ERR_BUSINESS_LOGIC')"
+    action: |
+      logError("Error de lógica de negocio: " + response.body);
+      recordMetric("business_logic_error_total", 1, {"type": extractErrorType(response.body)});
+      // No lo contamos como fallo para el circuit breaker
+      return response.withHeader("X-Business-Error", "true");
+    metrics:
+      - name: "business_logic_error_total"
+        description: "Total number of business logic errors"
+        labels:
+          service: "frontend"
+
+# Funciones utilitarias para las reglas
+functions:
+  - name: "isHealthCheckEndpoint"
+    code: |
+      function isHealthCheckEndpoint(path) {
+        return path.endsWith("/health") || path.endsWith("/ping");
+      }
+  
+  - name: "extractErrorType"
+    code: |
+      function extractErrorType(body) {
+        // Extrae el tipo específico de error de negocio
+        const match = body.match(/ERR_BUSINESS_LOGIC\[(.*?)\]/);
+        return match ? match[1] : "UNKNOWN";
+      }
+  
+  - name: "fallbackToCache"
+    code: |
+      function fallbackToCache() {
+        // Implementación para recuperar de caché
+        const cachedData = cacheService.get(request.path);
+        if (cachedData) {
+          return Response.ok(cachedData).header("X-From-Cache", "true");
+        } else {
+          return Response.status(503).body({
+            "error": "Service Unavailable",
+            "message": "No se pudo conectar al servicio y no hay datos en caché"
+          });
+        }
+      }
+  
+  - name: "useDefaultValue"
+    code: |
+      function useDefaultValue() {
+        // Provee valores por defecto según endpoint
+        if (request.path.includes("/api/frontend/products")) {
+          return Response.ok([]).header("X-Default-Response", "true");
+        } else if (request.path.includes("/api/frontend/users")) {
+          return Response.ok({}).header("X-Default-Response", "true");
+        } else {
+          return response;
+        }
+      }
+  
+  - name: "exponentialBackoff"
+    code: |
+      function exponentialBackoff(baseDelay, multiplier) {
+        const delay = baseDelay * Math.pow(multiplier, retryCount - 1);
+        retry(delay);
+      }
