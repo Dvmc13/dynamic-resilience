@@ -3,17 +3,17 @@ spring:
     gateway:
       routes:
         - id: frontend_route
-          uri: ${resilience.services.frontend.scheme:http}://${resilience.services.frontend.host:frontend}:${resilience.services.frontend.port:8080}
+          uri: ${resilience.gateway.services.frontend.scheme:http}://${resilience.gateway.services.frontend.host:frontend}:${resilience.gateway.services.frontend.port:8080}
           predicates:
             - Path=/api/frontend/**
           filters:
             - name: CircuitBreaker
               args:
                 name: frontend-service
-                fallbackUri: forward:/fallback/frontend
+                fallbackUri: ${resilience.gateway.services.frontend.circuitBreaker.fallbackUri:forward:/fallback/frontend}
             - name: Retry
               args:
-                retries: 3
+                retries: ${resilience.gateway.services.frontend.retry.maxAttempts:3}
                 methods: GET,POST
                 series: SERVER_ERROR
                 exceptions: java.io.IOException,java.util.concurrent.TimeoutException
@@ -26,7 +26,9 @@ spring:
             - name: Bulkhead
               args:
                 name: frontend-bulkhead
-                max-concurrent-calls: 100
+                max-concurrent-calls: ${resilience.gateway.services.frontend.bulkhead.maxConcurrentCalls:100}
+                max-wait-duration: ${resilience.gateway.services.frontend.bulkhead.maxWaitDuration:50ms}
+                fallbackUri: ${resilience.gateway.services.frontend.bulkhead.fallbackUri:forward:/fallback/bulkhead-full}
             - StripPrefix=2
             - name: RequestSize
               args:
@@ -34,8 +36,8 @@ spring:
             - name: ResponseTimeout
               args:
                 timeout: 5s
-            - AddResponseHeader=X-Response-Time, $\{responseTime:0}
-            - AddResponseHeader=X-Circuit-State, $\{circuitBreakerState:unknown}
+            - AddResponseHeader=X-Response-Time, ${responseTime:0}
+            - AddResponseHeader=X-Circuit-State, ${circuitBreakerState:unknown}
 
         - id: dynamic_service_route
           uri: lb://${serviceName}
