@@ -3,32 +3,31 @@ spring:
     gateway:
       routes:
         - id: frontend_route
-          uri: ${resilience.gateway.services.frontend.scheme:http}://${resilience.gateway.services.frontend.host:frontend}:${resilience.gateway.services.frontend.port:8080}
+          uri: ${resilience.services.frontend.scheme:http}://${resilience.services.frontend.host:frontend}:${resilience.services.frontend.port:8080}
           predicates:
             - Path=/api/frontend/**
           filters:
             - name: CircuitBreaker
               args:
                 name: frontend-service
-                fallbackUri: ${resilience.gateway.services.frontend.circuitBreaker.fallbackUri:forward:/fallback/frontend}
+                fallbackUri: forward:/fallback/frontend
             - name: Retry
               args:
-                retries: ${resilience.gateway.services.frontend.retry.maxAttempts:3}
+                retries: 3
                 methods: GET,POST
                 series: SERVER_ERROR
                 exceptions: java.io.IOException,java.util.concurrent.TimeoutException
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 20
-                redis-rate-limiter.burstCapacity: 40
-                rate-limiter.type: REDIS
-                key-resolver: "#{@ipKeyResolver}"
+            # Filtro de Rate Limiter basado en Redis; deshabilitado si no hay Redis.
+            # - name: RequestRateLimiter
+            #   args:
+            #     redis-rate-limiter.replenish-rate: 20
+            #     redis-rate-limiter.burst-capacity: 40
+            #     rate-limiter.type: REDIS
+            #     key-resolver: "#{@ipKeyResolver}"
             - name: Bulkhead
               args:
                 name: frontend-bulkhead
-                max-concurrent-calls: ${resilience.gateway.services.frontend.bulkhead.maxConcurrentCalls:100}
-                max-wait-duration: ${resilience.gateway.services.frontend.bulkhead.maxWaitDuration:50ms}
-                fallbackUri: ${resilience.gateway.services.frontend.bulkhead.fallbackUri:forward:/fallback/bulkhead-full}
+                max-concurrent-calls: 100
             - StripPrefix=2
             - name: RequestSize
               args:
@@ -55,8 +54,8 @@ spring:
                 series: SERVER_ERROR
             - name: RequestRateLimiter
               args:
-                redis-rate-limiter.replenishRate: 50
-                redis-rate-limiter.burstCapacity: 100
+                redis-rate-limiter.replenish-rate: 50
+                redis-rate-limiter.burst-capacity: 100
                 key-resolver: "#{@userKeyResolver}"
             - StripPrefix=2
             - name: AddResponseHeader
