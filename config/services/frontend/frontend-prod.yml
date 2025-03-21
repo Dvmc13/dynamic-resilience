@@ -16,41 +16,29 @@ server:
     connection-timeout: 3s
 
 resilience:
-  gateway:
-    services:
-      frontend:
-        host: ${FRONTEND_PROD_HOST:frontend-prod}
-        port: ${FRONTEND_PROD_PORT:8080}
-        circuitBreaker:
+  services:
+    frontend:
+      host: ${FRONTEND_PROD_HOST:frontend-prod}
+      port: ${FRONTEND_PROD_PORT:8080}
+      circuitbreaker:
+        enabled: true
+        forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
+        metrics:
           enabled: true
-          forcedState: ${FRONTEND_CIRCUIT_FORCED_STATE:}
-          metrics:
-            enabled: true
-          slidingWindowSize: 200
-          failureRateThreshold: 30
-          waitDurationInOpenState: 60
-          permittedCallsInHalfOpen: 10
-          automaticTransitionFromOpenToHalfOpenEnabled: true
-          minimumNumberOfCalls: 10
-          fallbackUri: forward:/fallback/frontend
-        retry:
-          enabled: true
-          maxAttempts: ${FRONTEND_RETRY_MAX_ATTEMPTS_PROD:2}
-          waitDuration: ${FRONTEND_RETRY_WAIT_DURATION_PROD:1s}
-          enableExponentialBackoff: true
-          exponentialBackoffMultiplier: 2
-          fallbackUri: forward:/fallback/retry-exhausted
-        rateLimiter:
-          enabled: true
-          limitForPeriod: 50
-          limitRefreshPeriod: 1s
-          timeoutDuration: 100ms
-          fallbackUri: forward:/fallback/rate-limited
-        bulkhead:
-          enabled: true
-          maxConcurrentCalls: 200
-          maxWaitDuration: 30ms
-          fallbackUri: forward:/fallback/bulkhead-full
+          sliding-window-size: 200
+          failure-rate-threshold: 30  # Más estricto en producción
+      retry:
+        enabled: true
+        maxAttemptsOverride: ${FRONTEND_RETRY_MAX_ATTEMPTS_PROD:2}
+        waitDurationOverride: ${FRONTEND_RETRY_WAIT_DURATION_PROD:1s}
+      ratelimiter:
+        enabled: true
+        limitForPeriod: 50
+        limitRefreshPeriod: 1s
+      bulkhead:
+        enabled: true
+        maxConcurrentCalls: 200
+        maxWaitDuration: 30ms
 
 management:
   endpoints:
