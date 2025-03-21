@@ -15,15 +15,17 @@ resilience4j:
         timeout-duration: 200ms
         register-health-indicator: true
 
-spring:
-  cloud:
-    gateway:
-      default-filters:
-        - name: RequestRateLimiter
-          args:
-            key-resolver: "#{@userKeyResolver}"
-            redis-rate-limiter.replenish-rate: 50
-            redis-rate-limiter.burst-capacity: 100
+# Se conserva la configuración para RequestRateLimiter en Gateway,
+# pero si no cuentas con Redis, esta sección se debe deshabilitar o utilizar un rate limiter en memoria.
+#spring:
+#  cloud:
+#    gateway:
+#      default-filters:
+#        - name: RequestRateLimiter
+#          args:
+#            key-resolver: "#{@userKeyResolver}"
+#            redis-rate-limiter.replenish-rate: 50
+#            redis-rate-limiter.burst-capacity: 100
 
 management:
   health:
