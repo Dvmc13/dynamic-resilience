@@ -15,11 +15,9 @@ spring:
           force-pull: true
           timeout: 10
           clone-on-start: true
-  rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USER:guest}
-    password: ${RABBITMQ_PASS:guest}
+  # Se elimina la configuración de RabbitMQ y se sustituye por Kafka para el Bus:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
 
 # Mejora de logs para diagnóstico
 logging:
@@ -44,7 +42,6 @@ management:
       enabled: true
     ratelimiters:
       enabled: true
-
 # Configuración de Seguridad (Placeholders)
 #security:
   #config-repo:
