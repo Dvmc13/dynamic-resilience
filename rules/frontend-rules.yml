@@ -24,7 +24,7 @@ rules:
       logWarning("Respuesta lenta detectada: " + response.time + "ms");
       recordMetric("slow_response_total", 1, {"endpoint": request.path});
       if (response.time > 5000) {
-        // Si es extremadamente lento, agregarlo a las métricas del circuit breaker
+        // Si es extremadamente lento, marcarlo como fallo para el circuit breaker
         markAsFailure();
       }
     metrics:
@@ -72,7 +72,7 @@ rules:
     action: |
       logError("Error de lógica de negocio: " + response.body);
       recordMetric("business_logic_error_total", 1, {"type": extractErrorType(response.body)});
-      // No lo contamos como fallo para el circuit breaker
+      // No se cuenta como fallo para el circuit breaker
       return response.withHeader("X-Business-Error", "true");
     metrics:
       - name: "business_logic_error_total"
