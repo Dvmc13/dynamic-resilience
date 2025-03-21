@@ -15,54 +15,34 @@ spring:
     web-application-type: reactive
 
 resilience:
-  gateway:
-    enabled: true
-    services:
-      frontend:
-        host: ${FRONTEND_HOST:frontend}
-        port: ${FRONTEND_PORT:8080}
-        circuitBreaker:
-          enabled: true
-          fallbackUri: forward:/fallback/frontend
-          slidingWindowSize: 100
-          failureRateThreshold: 50
-          waitDurationInOpenState: 30
-          permittedCallsInHalfOpen: 5
-          automaticTransitionFromOpenToHalfOpenEnabled: true
-          minimumNumberOfCalls: 10
-        retry:
-          enabled: true
-          maxAttempts: 3
-          waitDuration: 750ms
-          enableExponentialBackoff: true
-          exponentialBackoffMultiplier: 2
-          fallbackUri: forward:/fallback/retry-exhausted
-        rateLimiter:
-          enabled: true
-          limitForPeriod: 100
-          limitRefreshPeriod: 1s
-          timeoutDuration: 0
-          fallbackUri: forward:/fallback/rate-limited
-        bulkhead:
-          enabled: true
-          maxConcurrentCalls: 200
-          maxWaitDuration: 50ms
-          fallbackUri: forward:/fallback/bulkhead-full
-    response-templates:
-      circuit-open: |
-        {
-          "status": "SERVICE_UNAVAILABLE",
-          "message": "El servicio está temporalmente no disponible. Por favor intente más tarde.",
-          "timestamp": "${timestamp}",
-          "path": "${path}"
-        }
-      rate-limited: |
-        {
-          "status": "TOO_MANY_REQUESTS",
-          "message": "Has excedido el límite de solicitudes. Por favor espera e intenta nuevamente.",
-          "resetAt": "${resetTime}",
-          "path": "${path}"
-        }
+  enabled: true
+  services:
+    frontend:
+      host: ${FRONTEND_HOST:frontend}
+      port: ${FRONTEND_PORT:8080}
+      circuit-breaker:
+        enabled: true
+      retry:
+        enabled: true
+      rate-limiter:
+        enabled: true
+      bulkhead:
+        enabled: true
+  response-templates:
+    circuit-open: |
+      {
+        "status": "SERVICE_UNAVAILABLE",
+        "message": "El servicio está temporalmente no disponible. Por favor, intente más tarde.",
+        "timestamp": "${timestamp}",
+        "path": "${path}"
+      }
+    rate-limited: |
+      {
+        "status": "TOO_MANY_REQUESTS",
+        "message": "Has excedido el límite de solicitudes. Por favor, espera e intenta nuevamente.",
+        "resetAt": "${resetTime}",
+        "path": "${path}"
+      }
 
 resilience4j:
   circuitbreaker:
@@ -77,7 +57,6 @@ resilience4j:
         wait-duration-in-open-state: 30s
         failure-rate-threshold: 50
         sliding-window-size: 100
-
   retry:
     instances:
       gateway-retry:
@@ -87,19 +66,16 @@ resilience4j:
           - org.springframework.web.reactive.function.client.WebClientResponseException
           - java.io.IOException
           - java.util.concurrent.TimeoutException
-
   bulkhead:
     instances:
       gateway-requests:
         max-concurrent-calls: 200
         max-wait-duration: 50ms
-
   timelimiter:
     instances:
       gateway-timeout:
         timeout-duration: 5s
         cancel-running-future: true
-
   ratelimiter:
     instances:
       gateway-limiter:
@@ -136,10 +112,11 @@ alerting:
   enabled: true
   webhook-url: ${RESILIENCE_WEBHOOK:http://alertmanager:9093/api/v1/alerts}
   threshold:
-    circuit-breaker-open: 60000
-    high-failure-rate: 70
-    high-latency-ms: 2000
+    circuit-breaker-open: 60000  # Alerta si el CB permanece abierto más de 60s
+    high-failure-rate: 70        # Alerta si la tasa de fallos supera el 70%
+    high-latency-ms: 2000        # Alerta si la latencia supera 2000ms
 
+# Si se utiliza rate limiting distribuido, se puede configurar Redis.
 spring:
   redis:
     host: ${REDIS_HOST:localhost}
